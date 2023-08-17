@@ -132,38 +132,10 @@ public class App {
             System.out.println("Cantidad no válida.");
         } else {
             saldo += cantidad;
+            actualizarSaldoEnBD(cantidad, "deposito");
+            
             System.out.println("Depósito realizado con éxito. Su nuevo saldo es: $" + saldo);
-            // Actualizar el saldo en la base de datos en la tabla historicos
-            Connection connection = null;
-            try {
-                connection = getConnection(); // Reemplaza esto con tu conexión real
-            } catch (SQLException ex) {
-                System.err.println("No se puede conectar a Base de Datos");
-                ex.printStackTrace();
-                System.exit(1);
-            }
-            String query = "INSERT INTO historico (usuario_id, tipo_operacion, cantidad, fecha) VALUES (?, ?, ?, ?)";
-            try {
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, usuarioId);
-                preparedStatement.setString(2, "deposito");
-                preparedStatement.setDouble(3, cantidad);
-                preparedStatement.setDate(4, new java.sql.Date(System.currentTimeMillis()));
-                preparedStatement.executeUpdate();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            // Actualizar el saldo en la base de datos en la tabla usuarios
-            query = "UPDATE usuarios SET saldo = ? WHERE id = ?";
-            try {
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setDouble(1, saldo);
-                preparedStatement.setInt(2, usuarioId);
-                preparedStatement.executeUpdate();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            
         }
     }
 
@@ -178,37 +150,10 @@ public class App {
             System.out.println("Saldo insuficiente.");
         } else {
             saldo -= cantidad;
+            actualizarSaldoEnBD(cantidad, "retiro");
+            
             System.out.println("Retiro realizado con éxito. Su nuevo saldo es: $" + saldo);
-            // Actualizar el saldo en la base de datos en la tabla historicos
-            Connection connection = null;
-            try {
-                connection = getConnection(); // Reemplaza esto con tu conexión real
-            } catch (SQLException ex) {
-                System.err.println("No se puede conectar a Base de Datos");
-                ex.printStackTrace();
-                System.exit(1);
-            }
-            String query = "INSERT INTO historico (usuario_id, tipo_operacion, cantidad, fecha) VALUES (?, ?, ?, ?)";
-            try {
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, usuarioId);
-                preparedStatement.setString(2, "retiro");
-                preparedStatement.setDouble(3, cantidad);
-                preparedStatement.setDate(4, new java.sql.Date(System.currentTimeMillis()));
-                preparedStatement.executeUpdate();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            // Actualizar el saldo en la base de datos en la tabla usuarios
-            query = "UPDATE usuarios SET saldo = ? WHERE id = ?";
-            try {
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setDouble(1, saldo);
-                preparedStatement.setInt(2, usuarioId);
-                preparedStatement.executeUpdate();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            
         }
     }
 
@@ -225,25 +170,10 @@ public class App {
 
             if (nuevoPin == confirmacionPin) {
                 pinActual = nuevoPin;
+                actualizarPINEnBD();
+                
                 System.out.println("PIN actualizado con éxito.");
-                // Actualizar el PIN en la base de datos en la tabla usuarios
-                Connection connection = null;
-                try {
-                    connection = getConnection(); // Reemplaza esto con tu conexión real
-                } catch (SQLException ex) {
-                    System.err.println("No se puede conectar a Base de Datos");
-                    ex.printStackTrace();
-                    System.exit(1);
-                }
-                String query = "UPDATE usuarios SET pin = ? WHERE id = ?";
-                try {
-                    PreparedStatement preparedStatement = connection.prepareStatement(query);
-                    preparedStatement.setInt(1, pinActual);
-                    preparedStatement.setInt(2, usuarioId);
-                    preparedStatement.executeUpdate();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                
             } else {
                 System.out.println("Los PINs no coinciden.");
             }
@@ -251,4 +181,62 @@ public class App {
             System.out.println("PIN incorrecto.");
         }
     }
+
+    public static void actualizarSaldoEnBD(double cantidad, String tipoOperacion) {
+        Connection connection = null;
+        try {
+            connection = getConnection(); // Reemplaza esto con tu conexión real
+        } catch (SQLException ex) {
+            System.err.println("No se puede conectar a Base de Datos");
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+        // Actualizar el saldo en la base de datos en la tabla historicos
+        String query = "INSERT INTO historico (usuario_id, tipo_operacion, cantidad, fecha) VALUES (?, ?, ?, ?)";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, usuarioId);
+            preparedStatement.setString(2, tipoOperacion);
+            preparedStatement.setDouble(3, cantidad);
+            preparedStatement.setDate(4, new java.sql.Date(System.currentTimeMillis()));
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // Actualizar el saldo en la base de datos en la tabla usuarios
+        query = "UPDATE usuarios SET saldo = ? WHERE id = ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setDouble(1, saldo);
+            preparedStatement.setInt(2, usuarioId);
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void actualizarPINEnBD() {
+        Connection connection = null;
+        try {
+            connection = getConnection(); // Reemplaza esto con tu conexión real
+        } catch (SQLException ex) {
+            System.err.println("No se puede conectar a Base de Datos");
+            ex.printStackTrace();
+            System.exit(1);
+        }
+        
+        // Actualizar el PIN en la base de datos en la tabla usuarios
+        String query = "UPDATE usuarios SET pin = ? WHERE id = ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, pinActual);
+            preparedStatement.setInt(2, usuarioId);
+            preparedStatement.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
+
