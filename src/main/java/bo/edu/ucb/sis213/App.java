@@ -153,6 +153,16 @@ public class App {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            // Actualizar el saldo en la base de datos en la tabla usuarios
+            query = "UPDATE usuarios SET saldo = ? WHERE id = ?";
+            try {
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setDouble(1, saldo);
+                preparedStatement.setInt(2, usuarioId);
+                preparedStatement.executeUpdate();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }
     }
@@ -189,6 +199,16 @@ public class App {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            // Actualizar el saldo en la base de datos en la tabla usuarios
+            query = "UPDATE usuarios SET saldo = ? WHERE id = ?";
+            try {
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setDouble(1, saldo);
+                preparedStatement.setInt(2, usuarioId);
+                preparedStatement.executeUpdate();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -206,6 +226,24 @@ public class App {
             if (nuevoPin == confirmacionPin) {
                 pinActual = nuevoPin;
                 System.out.println("PIN actualizado con éxito.");
+                // Actualizar el PIN en la base de datos en la tabla usuarios
+                Connection connection = null;
+                try {
+                    connection = getConnection(); // Reemplaza esto con tu conexión real
+                } catch (SQLException ex) {
+                    System.err.println("No se puede conectar a Base de Datos");
+                    ex.printStackTrace();
+                    System.exit(1);
+                }
+                String query = "UPDATE usuarios SET pin = ? WHERE id = ?";
+                try {
+                    PreparedStatement preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setInt(1, pinActual);
+                    preparedStatement.setInt(2, usuarioId);
+                    preparedStatement.executeUpdate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } else {
                 System.out.println("Los PINs no coinciden.");
             }
