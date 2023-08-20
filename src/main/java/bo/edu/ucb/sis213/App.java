@@ -8,9 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 public class App {
-    private static int usuarioId;
-    private static double saldo;
-    private static int pinActual;
+    public static int usuarioId;
+    public static double saldo;
+    public static int pinActual;
 
     private static final String HOST = "127.0.0.1";
     private static final int PORT = 3306;
@@ -45,7 +45,7 @@ public class App {
             ex.printStackTrace();
             System.exit(1);
         }
-        
+
 
         while (intentos > 0) {
             System.out.print("Ingrese su PIN de 4 dígitos: ");
@@ -101,10 +101,10 @@ public class App {
                     consultarSaldo();
                     break;
                 case 2:
-                    realizarDeposito();
+                    realizarDeposito(0);
                     break;
                 case 3:
-                    realizarRetiro();
+                    realizarRetiro(0);
                     break;
                 case 4:
                     cambiarPIN();
@@ -123,37 +123,29 @@ public class App {
         System.out.println("Su saldo actual es: $" + saldo);
     }
 
-    public static void realizarDeposito() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Ingrese la cantidad a depositar: $");
-        double cantidad = scanner.nextDouble();
-
-        if (cantidad <= 0) {
+    public static void realizarDeposito(double amount) {
+        if (amount <= 0) {
             System.out.println("Cantidad no válida.");
         } else {
-            saldo += cantidad;
-            actualizarSaldoEnBD(cantidad, "deposito");
-            
+            saldo += amount;
+            actualizarSaldoEnBD(amount, "deposito");
+
             System.out.println("Depósito realizado con éxito. Su nuevo saldo es: $" + saldo);
-            
+
         }
     }
 
-    public static void realizarRetiro() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Ingrese la cantidad a retirar: $");
-        double cantidad = scanner.nextDouble();
-
-        if (cantidad <= 0) {
+    public static void realizarRetiro(double amount) {
+        if (amount <= 0) {
             System.out.println("Cantidad no válida.");
-        } else if (cantidad > saldo) {
+        } else if (amount > saldo) {
             System.out.println("Saldo insuficiente.");
         } else {
-            saldo -= cantidad;
-            actualizarSaldoEnBD(cantidad, "retiro");
-            
+            saldo -= amount;
+            actualizarSaldoEnBD(amount, "retiro");
+
             System.out.println("Retiro realizado con éxito. Su nuevo saldo es: $" + saldo);
-            
+
         }
     }
 
@@ -171,9 +163,9 @@ public class App {
             if (nuevoPin == confirmacionPin) {
                 pinActual = nuevoPin;
                 actualizarPINEnBD();
-                
+
                 System.out.println("PIN actualizado con éxito.");
-                
+
             } else {
                 System.out.println("Los PINs no coinciden.");
             }
@@ -191,7 +183,7 @@ public class App {
             ex.printStackTrace();
             System.exit(1);
         }
-        
+
         // Actualizar el saldo en la base de datos en la tabla historicos
         String query = "INSERT INTO historico (usuario_id, tipo_operacion, cantidad, fecha) VALUES (?, ?, ?, ?)";
         try {
@@ -204,7 +196,7 @@ public class App {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         // Actualizar el saldo en la base de datos en la tabla usuarios
         query = "UPDATE usuarios SET saldo = ? WHERE id = ?";
         try {
@@ -226,7 +218,7 @@ public class App {
             ex.printStackTrace();
             System.exit(1);
         }
-        
+
         // Actualizar el PIN en la base de datos en la tabla usuarios
         String query = "UPDATE usuarios SET pin = ? WHERE id = ?";
         try {
