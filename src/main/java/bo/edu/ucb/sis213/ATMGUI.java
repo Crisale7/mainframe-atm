@@ -17,11 +17,17 @@ public class ATMGUI extends JFrame implements ActionListener {
     private JButton enterButton;
     private JButton exitButton;
 
+    private DatabaseConnection databaseConnection;
+    private ATM atm;
+
     public ATMGUI() {
         super("ATM");
         setSize(WIDTH, HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+
+        databaseConnection = new DatabaseConnection();
+        atm = new ATM(databaseConnection);
 
         Font font = new Font("Arial", Font.BOLD, 18);
 
@@ -60,18 +66,8 @@ public class ATMGUI extends JFrame implements ActionListener {
             String pinText = new String(pinField.getPassword());
             int pin = Integer.parseInt(pinText);
 
-            Connection connection = null;
-            try {
-                connection = App.getConnection();
-            } catch (SQLException ex) {
-                System.err.println("No se puede conectar a la Base de Datos");
-                ex.printStackTrace();
-                System.exit(1);
-            }
-
-            if (App.validarPIN(connection, pin)) {
-                App.pinActual = pin;
-                MainMenuGUI mainMenuGUI = new MainMenuGUI();
+            if (atm.validarPIN(pin)) {
+                MainMenuGUI mainMenuGUI = new MainMenuGUI(atm);
                 mainMenuGUI.setVisible(true);
                 this.dispose();
             } else {
@@ -100,11 +96,15 @@ class MainMenuGUI extends JFrame implements ActionListener {
     private JButton changePinButton;
     private JButton exitButton;
 
-    public MainMenuGUI() {
+    private ATM atm;
+
+    public MainMenuGUI(ATM atm) {
         super("ATM Menu Principal");
         setSize(WIDTH, HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+
+        this.atm = atm;
 
         Font font = new Font("Arial", Font.BOLD, 18);
 
@@ -134,6 +134,7 @@ class MainMenuGUI extends JFrame implements ActionListener {
         centerPanel.add(withdrawButton);
 
         changePinButton = new JButton("Cambiar PIN");
+        changePinButton = new JButton("Cambiar PIN");
         changePinButton.setFont(font);
         changePinButton.addActionListener(this);
         centerPanel.add(changePinButton);
@@ -152,34 +153,33 @@ class MainMenuGUI extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == checkBalanceButton) {
-            App.consultarSaldo();
-            JOptionPane.showMessageDialog(this, "Tu balance actual es: $" + App.saldo);
+            atm.consultarSaldo();
+            JOptionPane.showMessageDialog(this, "Tu balance actual es: $" + atm.saldo);
         } else if (e.getSource() == depositButton) {
             String input = JOptionPane.showInputDialog(this, "Ingrese la cantidad a depositar: $");
             double amount = Double.parseDouble(input);
 
-            App.realizarDeposito(amount);
-            JOptionPane.showMessageDialog(this, "Deposito exitoso. Su nuevo balance es: $" + App.saldo);
+            atm.realizarDeposito(amount);
+            JOptionPane.showMessageDialog(this, "Deposito exitoso. Su nuevo balance es: $" + atm.saldo);
 
         } else if (e.getSource() == withdrawButton) {
             String input = JOptionPane.showInputDialog(this, "Ingrese el monto a retirar: $");
             double amount = Double.parseDouble(input);
 
-            App.realizarRetiro(amount);
-            JOptionPane.showMessageDialog(this, "Retiro exitoso. Su nuevo balance es: $" + App.saldo);
+            atm.realizarRetiro(amount);
+            JOptionPane.showMessageDialog(this, "Retiro exitoso. Su nuevo balance es: $" + atm.saldo);
         } else if (e.getSource() == changePinButton) {
             String input = JOptionPane.showInputDialog(this, "Ingrese su PIN actual: ");
             int currentPin = Integer.parseInt(input);
 
-            if (currentPin == App.pinActual) {
+            if (currentPin == atm.pinActual) {
                 input = JOptionPane.showInputDialog(this, "Ingrese su nuevo PIN: ");
                 int newPin = Integer.parseInt(input);
                 input = JOptionPane.showInputDialog(this, "Confirme su nuevo PIN: ");
                 int confirmPin = Integer.parseInt(input);
 
                 if (newPin == confirmPin) {
-                    App.pinActual = newPin;
-                    App.actualizarPINEnBD();
+                    atm.cambiarPIN(currentPin, newPin, confirmPin);
                     JOptionPane.showMessageDialog(this, "PIN actualizado exitosamente.");
                 } else {
                     JOptionPane.showMessageDialog(this, "PINs no coinciden.");
